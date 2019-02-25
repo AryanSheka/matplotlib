@@ -165,15 +165,15 @@ def test_alias(equiv_styles):
 def test_xkcd_no_cm():
     assert mpl.rcParams["path.sketch"] is None
     plt.xkcd()
-    assert mpl.rcParams["path.sketch"] == (1, 100, 2)
+    assert mpl.rcParams["path.sketch"] == (1, 100, 2, 0)
     np.testing.break_cycles()
-    assert mpl.rcParams["path.sketch"] == (1, 100, 2)
+    assert mpl.rcParams["path.sketch"] == (1, 100, 2, 0)
 
 
 def test_xkcd_cm():
     assert mpl.rcParams["path.sketch"] is None
     with plt.xkcd():
-        assert mpl.rcParams["path.sketch"] == (1, 100, 2)
+        assert mpl.rcParams["path.sketch"] == (1, 100, 2, 0)
     assert mpl.rcParams["path.sketch"] is None
 
 
