@@ -186,6 +186,7 @@ class GraphicsContextBase:
         scale: float | None = ...,
         length: float | None = ...,
         randomness: float | None = ...,
+        seed:int | None = ...,
     ) -> None: ...
 
 class TimerBase:
