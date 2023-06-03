@@ -550,13 +550,6 @@ def validate_sketch(s):
         return tuple(_listify_validator(validate_float, n=3)(s))
     except ValueError:
         try:
-<<<<<<< HEAD
-            return tuple(_listify_validator(validate_float, n=3)(s))
-        except ValueError:
-            raise ValueError(
-                "path.sketch must be a 3-tuple (scale, length, randomness) or a"
-                " 4-tuple (scale, length, randomness, seed)")
-=======
             result = tuple(_listify_validator(validate_float, n=4)(s))
             # make sure seed is an integer
             return (result[0], result[1], result[2], int(result[3]))
@@ -564,7 +557,6 @@ def validate_sketch(s):
             raise ValueError(
                 "path.sketch must be a 3-tuple (scale, length, randomness) or"
                 " a 4-tuple (scale, length, randomness, seed)")
->>>>>>> 280bcf58d0 (Fix rcparam validation)
 
 
 def _validate_greaterthan_minushalf(s):
