@@ -999,7 +999,7 @@ class SketchBase
     static int previous_seed;
   protected:
     /* handle the special-case value -1 which means: use the
-       previous seed plus one. If not a special value, only 
+       previous seed plus one. If not a special value, only
        remember it as the last one and return it.
     */
     int get_prng_seed(int seed)
@@ -1045,7 +1045,11 @@ class Sketch: SketchBase
           m_last_y(0.0),
           m_has_last(false),
           m_p(0.0),
-          m_rand(0)
+          m_rand(0),
+          /* if scale==0. (e.g. with test), then seed is 0
+             that would set previous_seed to 0 which is not what we want.
+          */
+          m_seed0( scale!=0 ? get_prng_seed(seed) : 0)
     {
         rewind(0); // re-seeds PRNG with m_seed0 again
         const double d_M_PI = 3.14159265358979323846;

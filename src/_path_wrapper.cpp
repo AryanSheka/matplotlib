@@ -774,12 +774,8 @@ static PyMethodDef module_functions[] = {
     {"convert_path_to_polygons", (PyCFunction)Py_convert_path_to_polygons, METH_VARARGS|METH_KEYWORDS, Py_convert_path_to_polygons__doc__},
     {"cleanup_path", (PyCFunction)Py_cleanup_path, METH_VARARGS, Py_cleanup_path__doc__},
     {"convert_to_string", (PyCFunction)Py_convert_to_string, METH_VARARGS, Py_convert_to_string__doc__},
- sketch-seed
-    {"is_sorted", (PyCFunction)Py_is_sorted, METH_O, Py_is_sorted__doc__},
-    {"sketch_reset_previous_seed", (PyCFunction)Py_sketch_reset_previous_seed, METH_VARARGS, Py_sketch_reset_previous_seed__doc__},
-
     {"is_sorted_and_has_non_nan", (PyCFunction)Py_is_sorted_and_has_non_nan, METH_O, Py_is_sorted_and_has_non_nan__doc__},
-main
+    {"sketch_reset_previous_seed", (PyCFunction)Py_sketch_reset_previous_seed, METH_VARARGS, Py_sketch_reset_previous_seed__doc__},
     {NULL}
 };
 

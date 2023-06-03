@@ -395,6 +395,7 @@ class Matplotlib(SetupPackage):
         ext = Extension(
             "matplotlib.backends._backend_agg", [
                 "src/py_converters.cpp",
+                "src/path_converters.cpp",
                 "src/_backend_agg.cpp",
                 "src/_backend_agg_wrapper.cpp",
             ])
