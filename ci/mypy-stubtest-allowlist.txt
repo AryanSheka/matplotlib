@@ -17,51 +17,11 @@ matplotlib.*\.set$
 matplotlib.pyplot.*
 matplotlib.typing.*
 
-# _preprocess_data arg decorator
-matplotlib.axes.*Axes.acorr
-matplotlib.axes.*Axes.angle_spectrum
-matplotlib.axes.*Axes.bar
-matplotlib.axes.*Axes.barbs
-matplotlib.axes.*Axes.boxplot
-matplotlib.axes.*Axes.broken_barh
-matplotlib.axes.*Axes.cohere
-matplotlib.axes.*Axes.contour
-matplotlib.axes.*Axes.contourf
-matplotlib.axes.*Axes.csd
-matplotlib.axes.*Axes.ecdf
-matplotlib.axes.*Axes.errorbar
-matplotlib.axes.*Axes.eventplot
-matplotlib.axes.*Axes.fill_between
-matplotlib.axes.*Axes.fill_betweenx
-matplotlib.axes.*Axes.hexbin
-matplotlib.axes.*Axes.hist
-matplotlib.axes.*Axes.hist2d
-matplotlib.axes.*Axes.hlines
-matplotlib.axes.*Axes.imshow
-matplotlib.axes.*Axes.magnitude_spectrum
-matplotlib.axes.*Axes.pcolor
-matplotlib.axes.*Axes.pcolorfast
-matplotlib.axes.*Axes.pcolormesh
-matplotlib.axes.*Axes.phase_spectrum
-matplotlib.axes.*Axes.pie
-matplotlib.axes.*Axes.plot_date
-matplotlib.axes.*Axes.psd
-matplotlib.axes.*Axes.quiver
-matplotlib.axes.*Axes.scatter
-matplotlib.axes.*Axes.specgram
-matplotlib.axes.*Axes.stairs
-matplotlib.axes.*Axes.stem
-matplotlib.axes.*Axes.violinplot
-matplotlib.axes.*Axes.vlines
-matplotlib.axes.*Axes.xcorr
-
-# Other decorator modifying signature (maybe investigate)
+# Other decorator modifying signature
+# Runtime picks up  *args **kwargs, but only decorated by a decorator that uses @wraps so?
 matplotlib.axis.Axis.draw
+# Backcompat decorator which does not modify runtime reported signature
 matplotlib.offsetbox.*Offset[Bb]ox.get_offset
-
-# Inconsistent super/sub class signatures (other than just arg name)
-matplotlib.ticker.MultipleLocator.set_params
-matplotlib.text.Annotation.get_window_extent
 
 # Inconsistent super/sub class parameter name (maybe rename for consistency)
 matplotlib.projections.polar.RadialLocator.nonsingular
@@ -201,12 +161,6 @@ matplotlib.axes._base._AxesBase.get_fc
 matplotlib.axes._base._AxesBase.set_fc
 
 # Other dynamic python behaviors not type hinted
-matplotlib.projections.polar.PolarAxes.InvertedPolarTransform
-matplotlib.projections.polar.PolarAxes.PolarAffine
-matplotlib.projections.polar.PolarAxes.PolarTransform
-matplotlib.projections.polar.PolarAxes.RadialLocator
-matplotlib.projections.polar.PolarAxes.ThetaFormatter
-matplotlib.projections.polar.PolarAxes.ThetaLocator
 matplotlib.rcsetup.defaultParams
 
 # Maybe should be abstractmethods, required for subclasses, stubs define once
@@ -215,10 +169,6 @@ matplotlib.tri.*TriInterpolator.gradient
 
 # Functionally a method call, but actually a class instance, type hinted as former
 matplotlib.rcsetup.validate_fillstyle
-
-# C-defined method without docstring indicating signature
-matplotlib.transforms.count_bboxes_overlapping_bbox
-matplotlib.transforms.update_path_extents
 
 # TypeVar used only in type hints
 matplotlib.backend_bases.FigureCanvasBase._T

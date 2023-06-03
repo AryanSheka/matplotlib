@@ -1831,17 +1831,41 @@ class LinearLocator(Locator):
 
 class MultipleLocator(Locator):
     """
-    Set a tick on each integer multiple of the *base* within the view
-    interval.
+    Set a tick on each integer multiple of the *base* plus an *offset* within
+    the view interval.
     """
 
-    def __init__(self, base=1.0):
-        self._edge = _Edge_integer(base, 0)
+    def __init__(self, base=1.0, offset=0.0):
+        """
+        Parameters
+        ----------
+        base : float > 0
+            Interval between ticks.
+        offset : float
+            Value added to each multiple of *base*.
 
-    def set_params(self, base):
-        """Set parameters within this locator."""
+            .. versionadded:: 3.8
+        """
+        self._edge = _Edge_integer(base, 0)
+        self._offset = offset
+
+    def set_params(self, base=None, offset=None):
+        """
+        Set parameters within this locator.
+
+        Parameters
+        ----------
+        base : float > 0
+            Interval between ticks.
+        offset : float
+            Value added to each multiple of *base*.
+
+            .. versionadded:: 3.8
+        """
         if base is not None:
             self._edge = _Edge_integer(base, 0)
+        if offset is not None:
+            self._offset = offset
 
     def __call__(self):
         """Return the locations of the ticks."""
@@ -1852,19 +1876,20 @@ class MultipleLocator(Locator):
         if vmax < vmin:
             vmin, vmax = vmax, vmin
         step = self._edge.step
+        vmin -= self._offset
+        vmax -= self._offset
         vmin = self._edge.ge(vmin) * step
         n = (vmax - vmin + 0.001 * step) // step
-        locs = vmin - step + np.arange(n + 3) * step
+        locs = vmin - step + np.arange(n + 3) * step + self._offset
         return self.raise_if_exceeds(locs)
 
     def view_limits(self, dmin, dmax):
         """
-        Set the view limits to the nearest multiples of *base* that
-        contain the data.
+        Set the view limits to the nearest tick values that contain the data.
         """
         if mpl.rcParams['axes.autolimit_mode'] == 'round_numbers':
-            vmin = self._edge.le(dmin) * self._edge.step
-            vmax = self._edge.ge(dmax) * self._edge.step
+            vmin = self._edge.le(dmin - self._offset) * self._edge.step + self._offset
+            vmax = self._edge.ge(dmax - self._offset) * self._edge.step + self._offset
             if vmin == vmax:
                 vmin -= 1
                 vmax += 1
@@ -2496,11 +2521,11 @@ class SymmetricalLogLocator(Locator):
         # We could also add ticks at t, but that seems to usually be
         # uninteresting.
         #
-        # "simple" mode is when the range falls entirely within (-t,
-        # t) -- it should just display (vmin, 0, vmax)
-        if -linthresh < vmin < vmax < linthresh:
+        # "simple" mode is when the range falls entirely within [-t, t]
+        #  -- it should just display (vmin, 0, vmax)
+        if -linthresh <= vmin < vmax <= linthresh:
             # only the linear range is present
-            return [vmin, vmax]
+            return sorted({vmin, 0, vmax})
 
         # Lower log range is present
         has_a = (vmin < -linthresh)
@@ -2869,7 +2894,11 @@ class AutoMinorLocator(Locator):
         major ticks; e.g., n=2 will place a single minor tick midway
         between major ticks.
 
-        If *n* is omitted or None, it will be set to 5 or 4.
+        If *n* is omitted or None, the value stored in rcParams will be used.
+        In case *n* is set to 'auto', it will be set to 4 or 5. If the distance
+        between the major ticks equals 1, 2.5, 5 or 10 it can be perfectly
+        divided in 5 equidistant sub-intervals with a length multiple of
+        0.05. Otherwise it is divided in 4 sub-intervals.
         """
         self.ndivs = n
 
@@ -2891,6 +2920,14 @@ class AutoMinorLocator(Locator):
             return []
 
         if self.ndivs is None:
+
+            if self.axis.axis_name == 'y':
+                self.ndivs = mpl.rcParams['ytick.minor.ndivs']
+            else:
+                # for x and z axis
+                self.ndivs = mpl.rcParams['xtick.minor.ndivs']
+
+        if self.ndivs == 'auto':
 
             majorstep_no_exponent = 10 ** (np.log10(majorstep) % 1)
 

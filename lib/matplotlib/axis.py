@@ -64,6 +64,7 @@ class Tick(martist.Artist):
         pad=None,
         labelsize=None,
         labelcolor=None,
+        labelfontfamily=None,
         zorder=None,
         gridOn=None,  # defaults to axes.grid depending on axes.grid.which
         tick1On=True,
@@ -174,11 +175,11 @@ class Tick(martist.Artist):
         self.label1 = mtext.Text(
             np.nan, np.nan,
             fontsize=labelsize, color=labelcolor, visible=label1On,
-            rotation=self._labelrotation[1])
+            fontfamily=labelfontfamily, rotation=self._labelrotation[1])
         self.label2 = mtext.Text(
             np.nan, np.nan,
             fontsize=labelsize, color=labelcolor, visible=label2On,
-            rotation=self._labelrotation[1])
+            fontfamily=labelfontfamily, rotation=self._labelrotation[1])
 
         self._apply_tickdir(tickdir)
 
@@ -291,6 +292,7 @@ class Tick(martist.Artist):
         renderer.close_group(self.__name__)
         self.stale = False
 
+    @_api.deprecated("3.8")
     def set_label1(self, s):
         """
         Set the label1 text.
@@ -304,6 +306,7 @@ class Tick(martist.Artist):
 
     set_label = set_label1
 
+    @_api.deprecated("3.8")
     def set_label2(self, s):
         """
         Set the label2 text.
@@ -376,7 +379,7 @@ class Tick(martist.Artist):
             self.label2.set(rotation=self._labelrotation[1])
 
         label_kw = {k[5:]: v for k, v in kwargs.items()
-                    if k in ['labelsize', 'labelcolor']}
+                    if k in ['labelsize', 'labelcolor', 'labelfontfamily']}
         self.label1.set(**label_kw)
         self.label2.set(**label_kw)
 
@@ -1036,7 +1039,7 @@ class Axis(martist.Artist):
         # The following lists may be moved to a more accessible location.
         allowed_keys = [
             'size', 'width', 'color', 'tickdir', 'pad',
-            'labelsize', 'labelcolor', 'zorder', 'gridOn',
+            'labelsize', 'labelcolor', 'labelfontfamily', 'zorder', 'gridOn',
             'tick1On', 'tick2On', 'label1On', 'label2On',
             'length', 'direction', 'left', 'bottom', 'right', 'top',
             'labelleft', 'labelbottom', 'labelright', 'labeltop',
@@ -1250,15 +1253,15 @@ class Axis(martist.Artist):
         major_ticks = self.get_major_ticks(len(major_locs))
         for tick, loc, label in zip(major_ticks, major_locs, major_labels):
             tick.update_position(loc)
-            tick.set_label1(label)
-            tick.set_label2(label)
+            tick.label1.set_text(label)
+            tick.label2.set_text(label)
         minor_locs = self.get_minorticklocs()
         minor_labels = self.minor.formatter.format_ticks(minor_locs)
         minor_ticks = self.get_minor_ticks(len(minor_locs))
         for tick, loc, label in zip(minor_ticks, minor_locs, minor_labels):
             tick.update_position(loc)
-            tick.set_label1(label)
-            tick.set_label2(label)
+            tick.label1.set_text(label)
+            tick.label2.set_text(label)
         ticks = [*major_ticks, *minor_ticks]
 
         view_low, view_high = self.get_view_interval()
@@ -1753,6 +1756,13 @@ class Axis(martist.Artist):
             Text string.
         fontdict : dict
             Text properties.
+
+            .. admonition:: Discouraged
+
+               The use of *fontdict* is discouraged. Parameters should be passed as
+               individual keyword arguments or using dictionary-unpacking
+               ``set_label_text(..., **fontdict)``.
+
         **kwargs
             Merged into fontdict.
         """
@@ -1913,6 +1923,13 @@ class Axis(martist.Artist):
             If True, set minor ticks instead of major ticks.
 
         fontdict : dict, optional
+
+            .. admonition:: Discouraged
+
+               The use of *fontdict* is discouraged. Parameters should be passed as
+               individual keyword arguments or using dictionary-unpacking
+               ``set_ticklabels(..., **fontdict)``.
+
             A dictionary controlling the appearance of the ticklabels.
             The default *fontdict* is::
 
@@ -2009,9 +2026,11 @@ class Axis(martist.Artist):
 
         Parameters
         ----------
-        ticks : list of floats
-            List of tick locations.  The axis `.Locator` is replaced by a
+        ticks : 1D ArrayLike
+            Array of tick locations.  The axis `.Locator` is replaced by a
             `~.ticker.FixedLocator`.
+
+            The values may be either floats or in axis units.
 
             Some tick formatters will not label arbitrary tick positions;
             e.g. log formatters only label decade ticks by default. In

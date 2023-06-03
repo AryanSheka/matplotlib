@@ -171,6 +171,27 @@ def test_acorr(fig_test, fig_ref):
 
 
 @check_figures_equal(extensions=["png"])
+def test_acorr_integers(fig_test, fig_ref):
+    np.random.seed(19680801)
+    Nx = 51
+    x = (np.random.rand(Nx) * 10).cumsum()
+    x = (np.ceil(x)).astype(np.int64)
+    maxlags = Nx-1
+
+    ax_test = fig_test.subplots()
+    ax_test.acorr(x, maxlags=maxlags)
+
+    ax_ref = fig_ref.subplots()
+
+    # Normalized autocorrelation
+    norm_auto_corr = np.correlate(x, x, mode="full")/np.dot(x, x)
+    lags = np.arange(-maxlags, maxlags+1)
+    norm_auto_corr = norm_auto_corr[Nx-1-maxlags:Nx+maxlags]
+    ax_ref.vlines(lags, [0], norm_auto_corr)
+    ax_ref.axhline(y=0, xmin=0, xmax=1)
+
+
+@check_figures_equal(extensions=["png"])
 def test_spy(fig_test, fig_ref):
     np.random.seed(19680801)
     a = np.ones(32 * 32)
@@ -639,6 +660,28 @@ def test_sticky_shared_axes(fig_test, fig_ref):
     ax0 = fig_ref.add_subplot(212)
     ax1 = fig_ref.add_subplot(211, sharex=ax0)
     ax0.pcolormesh(Z)
+
+
+def test_nargs_stem():
+    with pytest.raises(TypeError, match='0 were given'):
+        # stem() takes 1-3 arguments.
+        plt.stem()
+
+
+def test_nargs_legend():
+    with pytest.raises(TypeError, match='3 were given'):
+        ax = plt.subplot()
+        # legend() takes 0-2 arguments.
+        ax.legend(['First'], ['Second'], 3)
+
+
+def test_nargs_pcolorfast():
+    with pytest.raises(TypeError, match='2 were given'):
+        ax = plt.subplot()
+        # pcolorfast() takes 1 or 3 arguments,
+        # not passing any arguments fails at C = args[-1]
+        # before nargs_err is raised.
+        ax.pcolorfast([(0, 1), (0, 2)], [[1, 2, 3], [1, 2, 3]])
 
 
 @image_comparison(['offset_points'], remove_text=True)
@@ -1866,6 +1909,22 @@ def test_bar_timedelta():
                    (10, 20))
 
 
+def test_bar_datetime_start():
+    """test that tickers are correct for datetimes"""
+    start = np.array([np.datetime64('2012-01-01'), np.datetime64('2012-02-01'),
+                      np.datetime64('2012-01-15')])
+    stop = np.array([np.datetime64('2012-02-07'), np.datetime64('2012-02-13'),
+                     np.datetime64('2012-02-12')])
+
+    fig, ax = plt.subplots()
+    ax.bar([0, 1, 3], height=stop-start, bottom=start)
+    assert isinstance(ax.yaxis.get_major_formatter(), mdates.AutoDateFormatter)
+
+    fig, ax = plt.subplots()
+    ax.barh([0, 1, 3], width=stop-start, left=start)
+    assert isinstance(ax.xaxis.get_major_formatter(), mdates.AutoDateFormatter)
+
+
 def test_boxplot_dates_pandas(pd):
     # smoke test for boxplot and dates in pandas
     data = np.random.rand(5, 2)
@@ -2702,6 +2761,27 @@ class TestScatter:
                         linewidths=[*range(1, 5), None])
         assert_array_equal(pc.get_linewidths(),
                            [*range(1, 5), mpl.rcParams['lines.linewidth']])
+
+    def test_scatter_singular_plural_arguments(self):
+
+        with pytest.raises(TypeError,
+                           match="Got both 'linewidth' and 'linewidths',\
+ which are aliases of one another"):
+            plt.scatter([1, 2, 3], [1, 2, 3], linewidths=[0.5, 0.4, 0.3], linewidth=0.2)
+
+        with pytest.raises(TypeError,
+                           match="Got both 'edgecolor' and 'edgecolors',\
+ which are aliases of one another"):
+            plt.scatter([1, 2, 3], [1, 2, 3],
+                        edgecolors=["#ffffff", "#000000", "#f0f0f0"],
+                          edgecolor="#ffffff")
+
+        with pytest.raises(TypeError,
+                           match="Got both 'facecolors' and 'facecolor',\
+ which are aliases of one another"):
+            plt.scatter([1, 2, 3], [1, 2, 3],
+                        facecolors=["#ffffff", "#000000", "#f0f0f0"],
+                            facecolor="#ffffff")
 
 
 def _params(c=None, xsize=2, *, edgecolors=None, **kwargs):
@@ -4415,7 +4495,8 @@ def test_mollweide_forward_inverse_closure():
 
     # set up 1-degree grid in longitude, latitude
     lon = np.linspace(-np.pi, np.pi, 360)
-    lat = np.linspace(-np.pi / 2.0, np.pi / 2.0, 180)
+    # The poles are degenerate and thus sensitive to floating point precision errors
+    lat = np.linspace(-np.pi / 2.0, np.pi / 2.0, 180)[1:-1]
     lon, lat = np.meshgrid(lon, lat)
     ll = np.vstack((lon.flatten(), lat.flatten())).T
 
@@ -5711,6 +5792,30 @@ def test_pie_nolabel_but_legend():
     plt.axis('equal')
     plt.ylim(-1.2, 1.2)
     plt.legend()
+
+
+@image_comparison(['pie_shadow.png'], style='mpl20')
+def test_pie_shadow():
+    # Also acts as a test for the shade argument of Shadow
+    sizes = [15, 30, 45, 10]
+    colors = ['yellowgreen', 'gold', 'lightskyblue', 'lightcoral']
+    explode = (0, 0.1, 0, 0)  # only "explode" the 2nd slice
+    _, axes = plt.subplots(2, 2)
+    axes[0][0].pie(sizes, explode=explode, colors=colors,
+                   shadow=True, startangle=90,
+                   wedgeprops={'linewidth': 0})
+
+    axes[0][1].pie(sizes, explode=explode, colors=colors,
+                   shadow=False, startangle=90,
+                   wedgeprops={'linewidth': 0})
+
+    axes[1][0].pie(sizes, explode=explode, colors=colors,
+                   shadow={'ox': -0.05, 'oy': -0.05, 'shade': 0.9, 'edgecolor': 'none'},
+                   startangle=90, wedgeprops={'linewidth': 0})
+
+    axes[1][1].pie(sizes, explode=explode, colors=colors,
+                   shadow={'ox': 0.05, 'linewidth': 2, 'shade': 0.2},
+                   startangle=90, wedgeprops={'linewidth': 0})
 
 
 def test_pie_textprops():
@@ -8588,3 +8693,14 @@ def test_fill_between_axes_limits():
                     color='green', alpha=0.5, transform=ax.get_xaxis_transform())
 
     assert (ax.get_xlim(), ax.get_ylim()) == original_lims
+
+
+def test_tick_param_labelfont():
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3, 4], [1, 2, 3, 4])
+    ax.set_xlabel('X label in Impact font', fontname='Impact')
+    ax.set_ylabel('Y label in Humor Sans', fontname='Humor Sans')
+    ax.tick_params(color='r', labelfontfamily='monospace')
+    plt.title('Title in sans-serif')
+    for text in ax.get_xticklabels():
+        assert text.get_fontfamily()[0] == 'monospace'

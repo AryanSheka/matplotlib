@@ -115,7 +115,7 @@ This is especially helpful to generate *really lightweight* documents::
     ax.text(0.5, 0.5, chars)
 
     fig.savefig("AFM_PDF.pdf", format="pdf")
-    fig.savefig("AFM_PS.ps", format="ps)
+    fig.savefig("AFM_PS.ps", format="ps")
 
 Fonts in SVG
 ------------
@@ -185,7 +185,7 @@ SVG, PDF, and PS backends will "fallback" through multiple fonts in a single
    fig, ax = plt.subplots()
    ax.text(
        .5, .5, "There are 几个汉字 in between!",
-       family=['DejaVu Sans', 'WenQuanYi Zen Hei'],
+       family=['DejaVu Sans', 'Noto Sans CJK JP'],
        ha='center'
    )
 

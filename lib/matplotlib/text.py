@@ -115,6 +115,7 @@ class Text(Artist):
                  wrap=False,
                  transform_rotates_text=False,
                  parse_math=None,    # defaults to rcParams['text.parse_math']
+                 antialiased=None,  # defaults to rcParams['text.antialiased']
                  **kwargs
                  ):
         """
@@ -135,6 +136,7 @@ class Text(Artist):
         super().__init__()
         self._x, self._y = x, y
         self._text = ''
+        self._antialiased = mpl.rcParams['text.antialiased']
         self._reset_visual_defaults(
             text=text,
             color=color,
@@ -149,6 +151,7 @@ class Text(Artist):
             transform_rotates_text=transform_rotates_text,
             linespacing=linespacing,
             rotation_mode=rotation_mode,
+            antialiased=antialiased
         )
         self.update(kwargs)
 
@@ -167,6 +170,7 @@ class Text(Artist):
         transform_rotates_text=False,
         linespacing=None,
         rotation_mode=None,
+        antialiased=None
     ):
         self.set_text(text)
         self.set_color(
@@ -187,6 +191,8 @@ class Text(Artist):
             linespacing = 1.2  # Maybe use rcParam later.
         self.set_linespacing(linespacing)
         self.set_rotation_mode(rotation_mode)
+        if antialiased is not None:
+            self.set_antialiased(antialiased)
 
     def update(self, kwargs):
         # docstring inherited
@@ -309,6 +315,27 @@ class Text(Artist):
         """Return the text rotation mode."""
         return self._rotation_mode
 
+    def set_antialiased(self, antialiased):
+        """
+        Set whether to use antialiased rendering.
+
+        Parameters
+        ----------
+        antialiased : bool
+
+        Notes
+        -----
+        Antialiasing will be determined by :rc:`text.antialiased`
+        and the parameter *antialiased* will have no effect if the text contains
+        math expressions.
+        """
+        self._antialiased = antialiased
+        self.stale = True
+
+    def get_antialiased(self):
+        """Return whether antialiased rendering is used."""
+        return self._antialiased
+
     def update_from(self, other):
         # docstring inherited
         super().update_from(other)
@@ -322,6 +349,7 @@ class Text(Artist):
         self._transform_rotates_text = other._transform_rotates_text
         self._picker = other._picker
         self._linespacing = other._linespacing
+        self._antialiased = other._antialiased
         self.stale = True
 
     def _get_layout(self, renderer):
@@ -737,6 +765,7 @@ class Text(Artist):
             gc.set_foreground(self.get_color())
             gc.set_alpha(self.get_alpha())
             gc.set_url(self._url)
+            gc.set_antialiased(self._antialiased)
             self._set_gc_clip(gc)
 
             angle = self.get_rotation()
@@ -1478,13 +1507,13 @@ class _AnnotationBase:
             trans = tr + self.axes.transData
             return trans
 
-        s_ = coords.split()
-        if len(s_) != 2:
-            raise ValueError(f"{coords!r} is not a valid coordinate")
+        try:
+            bbox_name, unit = coords.split()
+        except ValueError:  # i.e. len(coords.split()) != 2.
+            raise ValueError(f"{coords!r} is not a valid coordinate") from None
 
         bbox0, xy0 = None, None
 
-        bbox_name, unit = s_
         # if unit is offset-like
         if bbox_name == "figure":
             bbox0 = self.figure.figbbox
@@ -1493,34 +1522,26 @@ class _AnnotationBase:
         elif bbox_name == "axes":
             bbox0 = self.axes.bbox
 
+        # reference x, y in display coordinate
         if bbox0 is not None:
             xy0 = bbox0.p0
         elif bbox_name == "offset":
             xy0 = self._get_position_xy(renderer)
-
-        if xy0 is not None:
-            # reference x, y in display coordinate
-            ref_x, ref_y = xy0
-            if unit == "points":
-                # dots per points
-                dpp = self.figure.dpi / 72
-                tr = Affine2D().scale(dpp)
-            elif unit == "pixels":
-                tr = Affine2D()
-            elif unit == "fontsize":
-                fontsize = self.get_size()
-                dpp = fontsize * self.figure.dpi / 72
-                tr = Affine2D().scale(dpp)
-            elif unit == "fraction":
-                w, h = bbox0.size
-                tr = Affine2D().scale(w, h)
-            else:
-                raise ValueError(f"{unit!r} is not a recognized unit")
-
-            return tr.translate(ref_x, ref_y)
-
         else:
             raise ValueError(f"{coords!r} is not a valid coordinate")
+
+        if unit == "points":
+            tr = Affine2D().scale(self.figure.dpi / 72)  # dpi/72 dots per point
+        elif unit == "pixels":
+            tr = Affine2D()
+        elif unit == "fontsize":
+            tr = Affine2D().scale(self.get_size() * self.figure.dpi / 72)
+        elif unit == "fraction":
+            tr = Affine2D().scale(*bbox0.size)
+        else:
+            raise ValueError(f"{unit!r} is not a recognized unit")
+
+        return tr.translate(*xy0)
 
     def set_annotation_clip(self, b):
         """
@@ -1701,15 +1722,15 @@ callable, default: 'data'
 or callable, default: value of *xycoords*
             The coordinate system that *xytext* is given in.
 
-            All *xycoords* values are valid as well as the following
-            strings:
+            All *xycoords* values are valid as well as the following strings:
 
-            =================   =========================================
+            =================   =================================================
             Value               Description
-            =================   =========================================
-            'offset points'     Offset (in points) from the *xy* value
-            'offset pixels'     Offset (in pixels) from the *xy* value
-            =================   =========================================
+            =================   =================================================
+            'offset points'     Offset, in points, from the *xy* value
+            'offset pixels'     Offset, in pixels, from the *xy* value
+            'offset fontsize'   Offset, relative to fontsize, from the *xy* value
+            =================   =================================================
 
         arrowprops : dict, optional
             The properties used to draw a `.FancyArrowPatch` arrow between the

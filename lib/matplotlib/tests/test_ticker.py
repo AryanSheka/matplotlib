@@ -63,6 +63,12 @@ class TestMultipleLocator:
                                9.441, 12.588])
         assert_almost_equal(loc.tick_values(-7, 10), test_value)
 
+    def test_basic_with_offset(self):
+        loc = mticker.MultipleLocator(base=3.147, offset=1.2)
+        test_value = np.array([-8.241, -5.094, -1.947, 1.2, 4.347, 7.494,
+                               10.641])
+        assert_almost_equal(loc.tick_values(-7, 10), test_value)
+
     def test_view_limits(self):
         """
         Test basic behavior of view limits.
@@ -80,6 +86,15 @@ class TestMultipleLocator:
             loc = mticker.MultipleLocator(base=3.147)
             assert_almost_equal(loc.view_limits(-4, 4), (-6.294, 6.294))
 
+    def test_view_limits_round_numbers_with_offset(self):
+        """
+        Test that everything works properly with 'round_numbers' for auto
+        limit.
+        """
+        with mpl.rc_context({'axes.autolimit_mode': 'round_numbers'}):
+            loc = mticker.MultipleLocator(base=3.147, offset=1.3)
+            assert_almost_equal(loc.view_limits(-4, 4), (-4.994, 4.447))
+
     def test_set_params(self):
         """
         Create multiple locator with 0.7 base, and change it to something else.
@@ -88,6 +103,8 @@ class TestMultipleLocator:
         mult = mticker.MultipleLocator(base=0.7)
         mult.set_params(base=1.7)
         assert mult._edge.step == 1.7
+        mult.set_params(offset=3)
+        assert mult._offset == 3
 
 
 class TestAutoMinorLocator:
@@ -210,6 +227,60 @@ class TestAutoMinorLocator:
         ax.set_ylim(lim)
 
         assert_almost_equal(ax.yaxis.get_ticklocs(minor=True), ref)
+
+    @pytest.mark.parametrize('use_rcparam', [False, True])
+    @pytest.mark.parametrize(
+        'lim, ref', [
+            ((0, 1.39),
+             [0.05, 0.1, 0.15, 0.25, 0.3, 0.35, 0.45, 0.5, 0.55, 0.65, 0.7,
+              0.75, 0.85, 0.9, 0.95, 1.05, 1.1, 1.15, 1.25, 1.3, 1.35]),
+            ((0, 0.139),
+             [0.005, 0.01, 0.015, 0.025, 0.03, 0.035, 0.045, 0.05, 0.055,
+              0.065, 0.07, 0.075, 0.085, 0.09, 0.095, 0.105, 0.11, 0.115,
+              0.125, 0.13, 0.135]),
+        ])
+    def test_number_of_minor_ticks_auto(self, lim, ref, use_rcparam):
+        if use_rcparam:
+            context = {'xtick.minor.ndivs': 'auto', 'ytick.minor.ndivs': 'auto'}
+            kwargs = {}
+        else:
+            context = {}
+            kwargs = {'n': 'auto'}
+
+        with mpl.rc_context(context):
+            fig, ax = plt.subplots()
+            ax.set_xlim(*lim)
+            ax.set_ylim(*lim)
+            ax.xaxis.set_minor_locator(mticker.AutoMinorLocator(**kwargs))
+            ax.yaxis.set_minor_locator(mticker.AutoMinorLocator(**kwargs))
+            assert_almost_equal(ax.xaxis.get_ticklocs(minor=True), ref)
+            assert_almost_equal(ax.yaxis.get_ticklocs(minor=True), ref)
+
+    @pytest.mark.parametrize('use_rcparam', [False, True])
+    @pytest.mark.parametrize(
+        'n, lim, ref', [
+            (2, (0, 4), [0.5, 1.5, 2.5, 3.5]),
+            (4, (0, 2), [0.25, 0.5, 0.75, 1.25, 1.5, 1.75]),
+            (10, (0, 1), [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]),
+        ])
+    def test_number_of_minor_ticks_int(self, n, lim, ref, use_rcparam):
+        if use_rcparam:
+            context = {'xtick.minor.ndivs': n, 'ytick.minor.ndivs': n}
+            kwargs = {}
+        else:
+            context = {}
+            kwargs = {'n': n}
+
+        with mpl.rc_context(context):
+            fig, ax = plt.subplots()
+            ax.set_xlim(*lim)
+            ax.set_ylim(*lim)
+            ax.xaxis.set_major_locator(mticker.MultipleLocator(1))
+            ax.xaxis.set_minor_locator(mticker.AutoMinorLocator(**kwargs))
+            ax.yaxis.set_major_locator(mticker.MultipleLocator(1))
+            ax.yaxis.set_minor_locator(mticker.AutoMinorLocator(**kwargs))
+            assert_almost_equal(ax.xaxis.get_ticklocs(minor=True), ref)
+            assert_almost_equal(ax.yaxis.get_ticklocs(minor=True), ref)
 
 
 class TestLogLocator:
@@ -505,6 +576,19 @@ class TestSymmetricalLogLocator:
         sym.set_params(subs=[2.0], numticks=8)
         assert sym._subs == [2.0]
         assert sym.numticks == 8
+
+    @pytest.mark.parametrize(
+            'vmin, vmax, expected',
+            [
+                (0, 1, [0, 1]),
+                (-1, 1, [-1, 0, 1]),
+            ],
+    )
+    def test_values(self, vmin, vmax, expected):
+        # https://github.com/matplotlib/matplotlib/issues/25945
+        sym = mticker.SymmetricalLogLocator(base=10, linthresh=1)
+        ticks = sym.tick_values(vmin=vmin, vmax=vmax)
+        assert_array_equal(ticks, expected)
 
 
 class TestAsinhLocator:
