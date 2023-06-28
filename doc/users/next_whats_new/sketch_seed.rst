@@ -2,7 +2,7 @@
 ----------------------------------------------------
 
 `~matplotlib.rcParams` ``path.sketch`` now has an optional *seed* parameter for the internal pseudo number generator.
-It has a default value of 0.
+It's default value is a randomly generated number.
 It can be set to -1 to have a changing seed for every figure/subfigure produced.
 Two codes with the same parameters and same seed will be exactly same to one another.
 
