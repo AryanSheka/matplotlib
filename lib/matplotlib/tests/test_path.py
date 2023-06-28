@@ -248,7 +248,7 @@ def test_xkcd():
     x = np.linspace(0, 2 * np.pi, 100)
     y = np.sin(x)
 
-    with plt.xkcd():
+    with plt.xkcd(seed=0):
         fig, ax = plt.subplots()
         ax.plot(x, y)
 
@@ -262,7 +262,7 @@ def test_xkcd_marker():
     y2 = 5 - x
     y3 = 2.5 * np.ones(8)
 
-    with plt.xkcd():
+    with plt.xkcd(seed=0):
         fig, ax = plt.subplots()
         ax.plot(x, y1, '+', ms=10)
         ax.plot(x, y2, 'o', ms=10)

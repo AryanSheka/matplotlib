@@ -1063,7 +1063,8 @@ class GraphicsContextBase:
         """
         return self._sketch
 
-    def set_sketch_params(self, scale=None, length=None, randomness=None, seed=0):
+    def set_sketch_params(self, scale=None, length=None, randomness=None,
+                          seed=(np.random.randint(0, 9999999))):
         """
         Set the sketch parameters.
 

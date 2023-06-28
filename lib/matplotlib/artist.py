@@ -683,7 +683,8 @@ class Artist:
         """
         return self._sketch
 
-    def set_sketch_params(self, scale=None, length=None, randomness=None, seed=0):
+    def set_sketch_params(self, scale=None, length=None, randomness=None,
+                          seed=(np.random.randint(0, 9999999))):
         """
         Set the sketch parameters.
 
@@ -702,10 +703,11 @@ class Artist:
 
             The PGF backend uses this argument as an RNG seed and not as
             described above. Using the same seed yields the same random shape.
+
         seed : int, optional
             Seed for the internal pseudo-random number generator.
             For the same seed, the result will be exactly the same.
-
+            (default is a randomly generated number)
             .. versionadded:: 3.8
 
             .. ACCEPTS: (scale: float, length: float, randomness: float, seed: int)
