@@ -991,36 +991,9 @@ class PathSimplifier : protected EmbeddedQueue<9>
     }
 };
 
-// XXX: remove!!!
-// #include<iostream>
-
-class SketchBase
-{
-    static int previous_seed; //Initialized to 0 in path_converters.cpp
-  protected:
-    /* handle the special-case value -1 which means: use the
-       previous seed plus one. If not a special value, only
-       remember it as the last one and return it.
-    */
-    int get_prng_seed(int seed)
-    {
-        if (seed==-1) {
-            previous_seed++;
-        } else {
-            previous_seed = seed;
-        }
-        // std::cerr<<"Seeding PRNG with "<<previous_seed<<" (@"<<(void*)(&previous_seed)<<"; got seed "<<seed<<")"<<std::endl;
-        return previous_seed;
-    };
-  public:
-    static void reset_previous_seed(int seed = 0)
-    {
-       previous_seed = seed;
-    }
-};
 
 template <class VertexSource>
-class Sketch: SketchBase
+class Sketch
 {
   public:
     /*
@@ -1046,10 +1019,7 @@ class Sketch: SketchBase
           m_has_last(false),
           m_p(0.0),
           m_rand(0),
-          /* if scale==0. (e.g. with test), then seed is 0
-             that would set previous_seed to 0 which is not what we want.
-          */
-          m_seed0( scale!=0 ? get_prng_seed(seed) : 0)
+          m_seed0(seed)
     {
         rewind(0); // re-seeds PRNG with m_seed0 again
         const double d_M_PI = 3.14159265358979323846;

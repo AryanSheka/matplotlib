@@ -757,6 +757,8 @@ class RendererBase:
 
 class GraphicsContextBase:
     """An abstract base class that provides color, line styles, etc."""
+    _sketch_seed = 0
+    _seed_increment = 0
 
     def __init__(self):
         self._alpha = 1.0
@@ -1063,8 +1065,23 @@ class GraphicsContextBase:
         """
         return self._sketch
 
+    def reset_seed_increment(self):
+        """Reset seed_increment to 0."""
+        GraphicsContextBase._seed_increment = 0
+
+    def increase_seed_increment(self):
+        """Increment seed_increment by 1."""
+        GraphicsContextBase._seed_increment += 1
+
+    def set_sketch_seed(self, seed):
+        """Set seed to a value and raise error if it is not a non negative integer"""
+        if ((seed < 0) or (not (isinstance(seed, int)))):
+            raise ValueError("seed must be a non negative integer")
+
+        GraphicsContextBase._sketch_seed = seed
+
     def set_sketch_params(self, scale=None, length=None, randomness=None,
-                          seed=(np.random.randint(0, 9999999))):
+                          seed=None):
         """
         Set the sketch parameters.
 
@@ -1081,9 +1098,17 @@ class GraphicsContextBase:
         seed : int, optional
             Seed for the internal pseudo-random number generator.
         """
+
+        if seed is not None:
+            self.set_sketch_seed(seed)
+
+        """Increase seed_increment for every call"""
+        self.increase_seed_increment()
+
         self._sketch = (
             None if scale is None
-            else (scale, length or 128., randomness or 16., seed))
+            else (scale, length or 128., randomness or 16.,
+                  self._sketch_seed + self._seed_increment))
 
 
 class TimerBase:

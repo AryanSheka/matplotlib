@@ -44,7 +44,9 @@ from matplotlib import _blocking_input, backend_bases, _docstring, projections
 from matplotlib.artist import (
     Artist, allow_rasterization, _finalize_rasterization)
 from matplotlib.backend_bases import (
-    DrawEvent, FigureCanvasBase, NonGuiException, MouseButton, _get_renderer)
+    DrawEvent, FigureCanvasBase, NonGuiException, MouseButton, _get_renderer,
+    GraphicsContextBase)
+
 import matplotlib._api as _api
 import matplotlib.cbook as cbook
 import matplotlib.colorbar as cbar

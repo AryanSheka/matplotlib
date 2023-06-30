@@ -4,7 +4,6 @@
 
 #include "py_converters.h"
 #include "py_adaptors.h"
-#include "path_converters.h"
 
 PyObject *convert_polygon_vector(std::vector<Polygon> &polygons)
 {
@@ -743,22 +742,6 @@ static PyObject *Py_is_sorted_and_has_non_nan(PyObject *self, PyObject *obj)
 }
 
 
-const char *Py_sketch_reset_previous_seed__doc__ = "sketch_reset_previous_seed(seed)";
-
-static PyObject *Py_sketch_reset_previous_seed(PyObject *self, PyObject *args, PyObject *kwds)
-{
-    int seed;
-
-    if (!PyArg_ParseTuple(args,"i:sketch_reset_previous_seed", &seed)) {
-        return NULL;
-    }
-
-    CALL_CPP("SketchBase::reset_previous_seed",(SketchBase::reset_previous_seed(seed)));
-
-    Py_RETURN_NONE;
-}
-
-
 static PyMethodDef module_functions[] = {
     {"point_in_path", (PyCFunction)Py_point_in_path, METH_VARARGS, Py_point_in_path__doc__},
     {"points_in_path", (PyCFunction)Py_points_in_path, METH_VARARGS, Py_points_in_path__doc__},
@@ -775,7 +758,6 @@ static PyMethodDef module_functions[] = {
     {"cleanup_path", (PyCFunction)Py_cleanup_path, METH_VARARGS, Py_cleanup_path__doc__},
     {"convert_to_string", (PyCFunction)Py_convert_to_string, METH_VARARGS, Py_convert_to_string__doc__},
     {"is_sorted_and_has_non_nan", (PyCFunction)Py_is_sorted_and_has_non_nan, METH_O, Py_is_sorted_and_has_non_nan__doc__},
-    {"sketch_reset_previous_seed", (PyCFunction)Py_sketch_reset_previous_seed, METH_VARARGS, Py_sketch_reset_previous_seed__doc__},
     {NULL}
 };
 

@@ -666,8 +666,8 @@ def setp(obj, *args, **kwargs):
 
 
 def xkcd(
-    scale: float = 1, length: float = 100, randomness: float = 2, seed: int = 0
-) -> ExitStack:
+    scale: float = 1, length: float = 100, randomness: float = 2,
+     seed: int | None = None) -> ExitStack:
     """
     Turn on `xkcd <https://xkcd.com/>`_ sketch-style drawing mode.  This will
     only have effect on things drawn after this function is called.
