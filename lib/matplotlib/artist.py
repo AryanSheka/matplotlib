@@ -669,22 +669,20 @@ class Artist:
         -------
         tuple or None
 
-            A 4-tuple with the following elements:
+            A 3-tuple with the following elements:
 
             - *scale*: The amplitude of the wiggle perpendicular to the
               source line.
             - *length*: The length of the wiggle along the line.
             - *randomness*: The scale factor by which the length is
               shrunken or expanded.
-            - *seed*: Seed for the internal pseudo-random number
-              generator.
 
             Returns *None* if no sketch parameters were set.
         """
         return self._sketch
 
     def set_sketch_params(self, scale=None, length=None, randomness=None,
-                          seed=(np.random.randint(0, 9999999))):
+                          seed=None):
         """
         Set the sketch parameters.
 
@@ -707,15 +705,18 @@ class Artist:
         seed : int, optional
             Seed for the internal pseudo-random number generator.
             For the same seed, the result will be exactly the same.
-            (default is a randomly generated number)
             .. versionadded:: 3.8
 
             .. ACCEPTS: (scale: float, length: float, randomness: float, seed: int)
         """
+        if seed is not None:
+            mpl.rcParams['path.sketch_seed'] = seed
+
         if scale is None:
             self._sketch = None
         else:
-            self._sketch = (scale, length or 128.0, randomness or 16.0, seed)
+            self._sketch = (scale, length or 128.0, randomness or 16.0,
+                            mpl.rcParams['path.sketch_seed'])
         self.stale = True
 
     def set_path_effects(self, path_effects):

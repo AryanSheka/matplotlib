@@ -684,8 +684,7 @@ def xkcd(
     randomness : float, optional
         The scale factor by which the length is shrunken or expanded.
     seed: int, optional
-        Seed for the internal pseudo-random number generator. Can be set to -1 to
-        have a changing seed for every figure produced.
+        Seed for the internal pseudo-random number generator.
 
     Notes
     -----
@@ -706,6 +705,9 @@ def xkcd(
     # This cannot be implemented in terms of contextmanager() or rc_context()
     # because this needs to work as a non-contextmanager too.
 
+    if seed is not None:
+        rcParams['path.sketch_seed'] = seed
+
     if rcParams['text.usetex']:
         raise RuntimeError(
             "xkcd mode is not compatible with text.usetex = True")
@@ -718,7 +720,7 @@ def xkcd(
         'font.family': ['xkcd', 'xkcd Script', 'Humor Sans', 'Comic Neue',
                         'Comic Sans MS'],
         'font.size': 14.0,
-        'path.sketch': (scale, length, randomness, seed),
+        'path.sketch': (scale, length, randomness),
         'path.effects': [
             patheffects.withStroke(linewidth=4, foreground="w")],
         'axes.linewidth': 1.5,

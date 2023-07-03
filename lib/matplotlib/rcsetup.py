@@ -549,14 +549,16 @@ def validate_sketch(s):
     try:
         return tuple(_listify_validator(validate_float, n=3)(s))
     except ValueError:
-        try:
-            result = tuple(_listify_validator(validate_float, n=4)(s))
-            # make sure seed is an integer
-            return (result[0], result[1], result[2], int(result[3]))
-        except ValueError:
-            raise ValueError(
-                "path.sketch must be a 3-tuple (scale, length, randomness) or"
-                " a 4-tuple (scale, length, randomness, seed)")
+        raise ValueError("path.sketch must be a 3-tuple (scale, length, randomness)")
+
+
+def validate_sketch_seed(s):
+    s = validate_int(s)
+
+    if ((s >= 0)):
+        return s
+    else:
+        raise ValueError("seed must be a non negative integer")
 
 
 def _validate_greaterthan_minushalf(s):
@@ -1283,6 +1285,7 @@ _validators = {
     "path.simplify_threshold": _validate_greaterequal0_lessequal1,
     "path.snap":               validate_bool,
     "path.sketch":             validate_sketch,
+    "path.sketch_seed":        validate_sketch_seed,
     "path.effects":            validate_anylist,
     "agg.path.chunksize":      validate_int,  # 0 to disable chunking
 
