@@ -1,23 +1,35 @@
-``seed`` parameter for ``path.sketch`` of rcParams
+``sketch_seed`` parameter for rcParams
 ----------------------------------------------------
 
-`~matplotlib.rcParams` ``path.sketch`` now has an optional *seed* parameter for the internal pseudo number generator.
-It's default value is a randomly generated number.
-It can be set to -1 to have a changing seed for every figure/subfigure produced.
+`~matplotlib.rcParams` now has a new parameter ``path.sketch_seed``.
+It's default value is 0 and accepted values are any non negative integer.
+This allows the user to set a value to the seed for the internal Pseudo number generator in one of three ways.
+
+1) Directly changing the rcParam:
+Eg. rcParams['path.sketch_seed']= 20
+
+2) Passing a value to the new *seed* parameter of `~matplotlib.pyplot.xkcd` function:
+Eg. plt.xkcd(seed=20)
+
+3) Passing a value to the new *seed* parameter of `~matplotlib.artist.Artist.set_sketch_params` function:
+Eg. Artist.set_sketch_params(seed=20)
+
+Note that using any one of these 3 methods changes the value of rcParams['path.sketch_seed'] variable.
+The seed will also have a rolling(auto incrementing) characteristic.
 Two codes with the same parameters and same seed will be exactly same to one another.
+
 
 .. plot::
     :include-source: true
 
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
+
+    rcParams['path.sketch_seed']=0
     with plt.xkcd():
         import matplotlib
         from matplotlib import gridspec
-
-        seed=0
-        rcParams['path.sketch']=(2,120,40,seed)
-
+        rcParams['path.sketch']=(2,120,40)
         pat,txt=plt.pie([10,20,30,40],wedgeprops={'edgecolor':'black'})
         plt.legend(pat,['first','second','third','fourth'],loc='best')
         plt.title("seed = 0")
@@ -28,16 +40,18 @@ Two codes with the same parameters and same seed will be exactly same to one ano
 
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
+    from matplotlib.artist import Artist
+
+    Artist().set_sketch_params(seed=20)
     with plt.xkcd():
         import matplotlib
         from matplotlib import gridspec
 
-        seed=-1
-        rcParams['path.sketch']=(2,120,40,seed)
+        rcParams['path.sketch']=(2,120,40)
 
         pat,txt=plt.pie([10,20,30,40],wedgeprops={'edgecolor':'black'})
         plt.legend(pat,['first','second','third','fourth'],loc='best')
-        plt.title("seed = -1")
+        plt.title("seed = 20")
     plt.show()
 
 .. plot::
@@ -45,12 +59,12 @@ Two codes with the same parameters and same seed will be exactly same to one ano
 
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
-    with plt.xkcd():
+
+    with plt.xkcd(seed=19680801):
         import matplotlib
         from matplotlib import gridspec
 
-        seed=19680801
-        rcParams['path.sketch']=(2,120,40,seed)
+        rcParams['path.sketch']=(2,120,40)
 
         pat,txt=plt.pie([10,20,30,40],wedgeprops={'edgecolor':'black'})
         plt.legend(pat,['first','second','third','fourth'],loc='best')

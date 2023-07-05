@@ -1,0 +1,8 @@
+seed for ``path.sketch`` will have a rolling(auto incrementing) behaviour
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The seed for the internal Pseudo number generator will now have an auto incrementing behavior.
+Hence every sub-figure will be sketched with a different seed and hence giving a more non repeating, random look.
+Two figures sketched with the same parameters and same seed will look exactly the same.
+
+See 'What's new' on how to set a value to the seed and it's behaviour.
