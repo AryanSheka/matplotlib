@@ -754,10 +754,22 @@ class RendererBase:
 
         return _setattr_cm(self, **no_ops)
 
+    @property
+    def _seed_increment(self):
+        """
+        seed increment for renderer.
+        It is used to implement the rolling characteristic for seed
+        """
+        self.__seed_increment += 1
+        return self.__seed_increment
+
+    @_seed_increment.setter
+    def _seed_increment(self, value):
+        self.__seed_increment = value
+
 
 class GraphicsContextBase:
     """An abstract base class that provides color, line styles, etc."""
-    _seed_increment = 0
 
     def __init__(self):
         self._alpha = 1.0
@@ -1063,15 +1075,6 @@ class GraphicsContextBase:
         """
         return self._sketch
 
-    def reset_seed_increment(self):
-        """Reset seed_increment to 0"""
-        GraphicsContextBase._seed_increment = 0
-
-    def get_seed_increment(self):
-        """Increment seed_increment by 1 for every call."""
-        GraphicsContextBase._seed_increment += 1
-        return self._seed_increment
-
     def set_sketch_params(self, scale=None, length=None, randomness=None,
                           seed=None):
         """
@@ -1096,8 +1099,8 @@ class GraphicsContextBase:
 
         self._sketch = (
             None if scale is None
-            else (scale, length or 128., randomness or 16.,
-                  rcParams['path.sketch_seed'] + self.get_seed_increment()))
+            else (scale, length or 128., randomness or 16., seed or 0)
+        )
 
 
 class TimerBase:

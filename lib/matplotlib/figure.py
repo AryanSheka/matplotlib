@@ -44,8 +44,7 @@ from matplotlib import _blocking_input, backend_bases, _docstring, projections
 from matplotlib.artist import (
     Artist, allow_rasterization, _finalize_rasterization)
 from matplotlib.backend_bases import (
-    DrawEvent, FigureCanvasBase, NonGuiException, MouseButton, _get_renderer,
-    GraphicsContextBase)
+    DrawEvent, FigureCanvasBase, NonGuiException, MouseButton, _get_renderer)
 
 import matplotlib._api as _api
 import matplotlib.cbook as cbook
@@ -3143,9 +3142,11 @@ None}, default: None
             return
 
         with self._render_lock:
-
             artists = self._get_draw_artists(renderer)
             try:
+                """For every new Figure, seed_increment is set to 0"""
+                renderer._seed_increment = 0
+
                 renderer.open_group('figure', gid=self.get_gid())
                 if self.axes and self.get_layout_engine() is not None:
                     try:

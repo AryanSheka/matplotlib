@@ -208,7 +208,12 @@ class Artist:
         self._url = None
         self._gid = None
         self._snap = None
-        self._sketch = mpl.rcParams['path.sketch']
+        self._sketch = (None if mpl.rcParams['path.sketch'] is None
+                        else (mpl.rcParams['path.sketch'] +
+                              (mpl.rcParams['path.sketch_seed'],)
+                              )
+                        )
+
         self._path_effects = mpl.rcParams['path.effects']
         self._sticky_edges = _XYPair([], [])
         self._in_layout = True
@@ -669,13 +674,15 @@ class Artist:
         -------
         tuple or None
 
-            A 3-tuple with the following elements:
+            A 4-tuple with the following elements:
 
             - *scale*: The amplitude of the wiggle perpendicular to the
               source line.
             - *length*: The length of the wiggle along the line.
             - *randomness*: The scale factor by which the length is
               shrunken or expanded.
+            - *seed*: Seed for the internal pseudo-random number
+              generator.
 
             Returns *None* if no sketch parameters were set.
         """
@@ -716,7 +723,7 @@ class Artist:
             self._sketch = None
         else:
             self._sketch = (scale, length or 128.0, randomness or 16.0,
-                            mpl.rcParams['path.sketch_seed'])
+                            seed or 0)
         self.stale = True
 
     def set_path_effects(self, path_effects):
