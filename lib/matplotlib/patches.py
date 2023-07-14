@@ -564,7 +564,8 @@ class Patch(artist.Artist):
             gc.set_hatch_color(self._hatch_color)
 
         if self.get_sketch_params() is not None:
-            scale, length, randomness, seed = self.get_sketch_params()
+            scale, length, randomness = self.get_sketch_params()
+            seed = self._sketch_seed
             seed += renderer._seed_increment
             gc.set_sketch_params(scale, length, randomness, seed)
 

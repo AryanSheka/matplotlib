@@ -1099,7 +1099,10 @@ class GraphicsContextBase:
 
         self._sketch = (
             None if scale is None
-            else (scale, length or 128., randomness or 16., seed or 0)
+            else (scale,
+                  length or rcParams['path.sketch'][1],
+                  randomness or rcParams['path.sketch'][2],
+                  seed or rcParams['path.sketch_seed'])
         )
 
 

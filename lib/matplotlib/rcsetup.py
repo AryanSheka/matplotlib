@@ -549,7 +549,7 @@ def validate_sketch(s):
     try:
         return tuple(_listify_validator(validate_float, n=3)(s))
     except ValueError:
-        raise ValueError("path.sketch must be a 3-tuple (scale, length, randomness)")
+        raise ValueError("Expected a (scale, length, randomness) triplet")
 
 
 def validate_sketch_seed(s):
